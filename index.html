@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <link rel="stylesheet" href="style.css">
+   <title>Random public apis</title>
+</head>
+
+<body>
+   <div class="main-container">
+      <h1 class="app-title">Random public apis</h1>
+
+      <button id="refreshButton">Refresh</button>
+      <div class="cards-container" id="cardsContainer">
+      </div>
+   </div>
+
+
+   <script>
+      let cardsCount = 20;
+      let refreshButton = document.getElementById('refreshButton');
+      let cardsContainer = document.getElementById('cardsContainer');
+
+      function createNewApiCard({API,Description,HTTPS,Cors,Link,Category}) {
+         let cardElement = document.createElement('div');
+         cardElement.className = "api-card";
+
+
+         let cardContentTemplate = `<h2 class="api-card__title">${API}</h2>
+         <p class"api-card__description"><b>API description:</b> <br> ${Description}</p>
+         <p class="api-card__detail"><span>Using https?</span> <b>${HTTPS ? "yes":"no"}</b></p>
+         <p class="api-card__detail"><span>Using CORS?</span> <b>${Cors ? "yes":"no"}</b></p>
+         <p class="api-card__detail"><span>Category:</span> <b>${Category}</b></p>
+         <a class="api-card__link" href="${Link}">LINK</a>`
+
+         cardElement.innerHTML = cardContentTemplate;
+         return cardElement;
+      }
+
+      function addCard(cardElement) {
+         cardsContainer.append(cardElement);
+      }
+
+      function generateRandomNumber(maxNumber) {
+         return Math.round(Math.random() * maxNumber)
+      }
+
+      function refreshCards () {
+         // removes all the cards an loads new ones
+         cardsContainer.innerHTML = '';
+         renderRandomCards();
+      }
+
+
+      async function renderRandomCards() {
+         let request = await fetch("https://api.publicapis.org/entries");
+         let data = await request.json();
+         let apisData = data.entries;
+         let randomPositionsUsed = [];
+
+         for (let i = 0; i < cardsCount; i++) {
+            let randomPosition = generateRandomNumber(90);
+            while (randomPositionsUsed.includes(randomPosition)) {
+               randomPosition = generateRandomNumber(90);
+            }
+            randomPositionsUsed.push(randomPosition);
+
+            let card = createNewApiCard(apisData[randomPosition]);
+            addCard(card);
+         }
+      }
+
+      renderRandomCards();
+      refreshButton.addEventListener('click', refreshCards);
+   </script>
+</body>
+</html>
